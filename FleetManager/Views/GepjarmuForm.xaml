@@ -1,0 +1,223 @@
+﻿<Window x:Class="FleetManager.Views.GepjarmuForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FleetManager - Új gépjármű"
+        Height="700"
+        Width="760"
+        MinHeight="600"
+        MinWidth="650"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F6FA">
+
+    <Window.Resources>
+
+        <Style x:Key="InputStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="#D4DEE9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#34465C"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="MinWidth" Value="110"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="85"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="75"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="#15253B"
+                Padding="30,0">
+
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Új gépjármű felvétele"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+
+                <TextBlock Text="Add meg a céges jármű adatait."
+                           FontSize="13"
+                           Foreground="#B8C8DD"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+        </Border>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+
+            <Grid Margin="30,25">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0"
+                            Grid.Column="0"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Rendszám *"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtRendszam"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="0"
+                            Grid.Column="2"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Márka *"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtMarka"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Modell *"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtModell"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1"
+                            Grid.Column="2"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Évjárat"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtEvjarat"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2"
+                            Grid.Column="0"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Alvázszám"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtAlvazszam"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2"
+                            Grid.Column="2"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Üzemanyag"
+                               Style="{StaticResource LabelStyle}"/>
+                    <ComboBox x:Name="cmbUzemanyag"
+                              Height="36"
+                              FontSize="13">
+                        <ComboBoxItem Content="Benzin"/>
+                        <ComboBoxItem Content="Dízel"/>
+                        <ComboBoxItem Content="Elektromos"/>
+                        <ComboBoxItem Content="Hibrid"/>
+                        <ComboBoxItem Content="Plug-in hibrid"/>
+                        <ComboBoxItem Content="LPG"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Row="3"
+                            Grid.Column="0"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Kilométeróra-állás"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox x:Name="txtKilometerora"
+                             Text="0"
+                             Style="{StaticResource InputStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="3"
+                            Grid.Column="2"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="Állapot"
+                               Style="{StaticResource LabelStyle}"/>
+                    <ComboBox x:Name="cmbAllapot"
+                              Height="36"
+                              FontSize="13"
+                              SelectedIndex="0">
+                        <ComboBoxItem Content="Aktív"/>
+                        <ComboBoxItem Content="Szervizben"/>
+                        <ComboBoxItem Content="Inaktív"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Row="4"
+                            Grid.Column="0">
+                    <TextBlock Text="Műszaki vizsga lejárata"
+                               Style="{StaticResource LabelStyle}"/>
+                    <DatePicker x:Name="dpMuszakiLejarat"
+                                Height="36"
+                                FontSize="13"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="4"
+                            Grid.Column="2">
+                    <TextBlock Text="Biztosítás lejárata"
+                               Style="{StaticResource LabelStyle}"/>
+                    <DatePicker x:Name="dpBiztositasLejarat"
+                                Height="36"
+                                FontSize="13"/>
+                </StackPanel>
+
+            </Grid>
+
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                Background="White"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,1,0,0">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,30,0">
+
+                <Button x:Name="btnMegse"
+                        Content="Mégse"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Background="#E2E8F0"
+                        Foreground="#34465C"
+                        Margin="0,0,10,0"/>
+
+                <Button x:Name="btnMentes"
+                        Content="Mentés"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Background="#2563EB"
+                        Foreground="White"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</Window>

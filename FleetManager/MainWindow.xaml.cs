@@ -1,4 +1,6 @@
 ﻿using FleetManager.Data;
+using FleetManager.Views;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Windows;
 
@@ -11,43 +13,53 @@ namespace FleetManager
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
+            btnUjGepjarmu.Click += BtnUjGepjarmu_Click;
         }
 
         private async void MainWindow_Loaded(
             object sender,
             RoutedEventArgs e)
         {
+            await GepjarmuvekBetolteseAsync();
+        }
+
+        private async System.Threading.Tasks.Task GepjarmuvekBetolteseAsync()
+        {
             try
             {
                 await using var db = new FleetManagerDbContext();
 
-                bool sikeresKapcsolat =
-                    await db.Database.CanConnectAsync();
+                var gepjarmuvek = await db.Gepjarmuvek
+                    .AsNoTracking()
+                    .OrderBy(g => g.Rendszam)
+                    .ToListAsync();
 
-                if (sikeresKapcsolat)
-                {
-                    MessageBox.Show(
-                        "Sikeres kapcsolódás a FleetManagerDB adatbázishoz!",
-                        "FleetManager – Adatbázis",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "Nem sikerült kapcsolódni az adatbázishoz.",
-                        "FleetManager – Kapcsolati hiba",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
+                dgGepjarmuvek.ItemsSource = gepjarmuvek;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Adatbázis-kapcsolati hiba:\n\n{ex.Message}",
-                    "FleetManager – Hiba",
+                    $"Nem sikerült betölteni a gépjárműveket.\n\n{ex.Message}",
+                    "FleetManager – Adatbázishiba",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+        }
+
+        private async void BtnUjGepjarmu_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            var ablak = new GepjarmuForm
+            {
+                Owner = this
+            };
+
+            bool? sikeresMentes = ablak.ShowDialog();
+
+            if (sikeresMentes == true)
+            {
+                await GepjarmuvekBetolteseAsync();
             }
         }
     }
