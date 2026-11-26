@@ -10,12 +10,54 @@ namespace FleetManager.Views
 {
     public partial class GepjarmuForm : Window
     {
+        private readonly int? szerkesztettGepjarmuId;
+
         public GepjarmuForm()
         {
             InitializeComponent();
 
             btnMentes.Click += BtnMentes_Click;
             btnMegse.Click += BtnMegse_Click;
+        }
+
+        public GepjarmuForm(Gepjarmu gepjarmu) : this()
+        {
+            szerkesztettGepjarmuId = gepjarmu.GepjarmuID;
+
+            Title = "FleetManager - Gépjármű szerkesztése";
+
+            txtRendszam.Text = gepjarmu.Rendszam;
+            txtMarka.Text = gepjarmu.Marka;
+            txtModell.Text = gepjarmu.Modell;
+            txtEvjarat.Text = gepjarmu.Evjarat?.ToString() ?? "";
+            txtAlvazszam.Text = gepjarmu.Alvazszam ?? "";
+            txtKilometerora.Text = gepjarmu.Kilometerora.ToString();
+
+            dpMuszakiLejarat.SelectedDate = gepjarmu.MuszakiLejarat;
+            dpBiztositasLejarat.SelectedDate = gepjarmu.BiztositasLejarat;
+
+            ComboBoxErtekKivalasztasa(cmbUzemanyag, gepjarmu.Uzemanyag);
+            ComboBoxErtekKivalasztasa(cmbAllapot, gepjarmu.Allapot);
+        }
+
+        private static void ComboBoxErtekKivalasztasa(
+            ComboBox comboBox,
+            string? ertek)
+        {
+            comboBox.SelectedIndex = -1;
+
+            foreach (var elem in comboBox.Items)
+            {
+                if (elem is ComboBoxItem comboBoxItem &&
+                    string.Equals(
+                        comboBoxItem.Content?.ToString(),
+                        ertek,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
         }
 
         private async void BtnMentes_Click(
@@ -58,7 +100,9 @@ namespace FleetManager.Views
 
             if (!string.IsNullOrWhiteSpace(txtEvjarat.Text))
             {
-                if (!int.TryParse(txtEvjarat.Text.Trim(), out int megadottEvjarat) ||
+                if (!int.TryParse(
+                        txtEvjarat.Text.Trim(),
+                        out int megadottEvjarat) ||
                     megadottEvjarat < 1886 ||
                     megadottEvjarat > DateTime.Now.Year + 1)
                 {
@@ -74,7 +118,9 @@ namespace FleetManager.Views
                 evjarat = megadottEvjarat;
             }
 
-            if (!int.TryParse(txtKilometerora.Text.Trim(), out int kilometerora) ||
+            if (!int.TryParse(
+                    txtKilometerora.Text.Trim(),
+                    out int kilometerora) ||
                 kilometerora < 0)
             {
                 MessageBox.Show(
@@ -87,28 +133,12 @@ namespace FleetManager.Views
             }
 
             string? uzemanyag =
-                (cmbUzemanyag.SelectedItem as ComboBoxItem)?.Content.ToString();
+                (cmbUzemanyag.SelectedItem as ComboBoxItem)?
+                .Content?.ToString();
 
             string allapot =
-                (cmbAllapot.SelectedItem as ComboBoxItem)?.Content.ToString()
-                ?? "Aktív";
-
-            var gepjarmu = new Gepjarmu
-            {
-                Rendszam = rendszam,
-                Marka = marka,
-                Modell = modell,
-                Evjarat = evjarat,
-                Alvazszam = string.IsNullOrWhiteSpace(alvazszam)
-                    ? null
-                    : alvazszam,
-                Uzemanyag = uzemanyag,
-                Kilometerora = kilometerora,
-                MuszakiLejarat = dpMuszakiLejarat.SelectedDate,
-                BiztositasLejarat = dpBiztositasLejarat.SelectedDate,
-                Allapot = allapot,
-                DolgozoID = null
-            };
+                (cmbAllapot.SelectedItem as ComboBoxItem)?
+                .Content?.ToString() ?? "Aktív";
 
             try
             {
@@ -116,18 +146,58 @@ namespace FleetManager.Views
 
                 await using var db = new FleetManagerDbContext();
 
-                db.Gepjarmuvek.Add(gepjarmu);
+                Gepjarmu gepjarmu;
+
+                if (szerkesztettGepjarmuId.HasValue)
+                {
+                    var meglevoGepjarmu =
+                        await db.Gepjarmuvek.FindAsync(
+                            szerkesztettGepjarmuId.Value);
+
+                    if (meglevoGepjarmu == null)
+                    {
+                        MessageBox.Show(
+                            "A kiválasztott gépjármű már nem található az adatbázisban.",
+                            "FleetManager – Hiba",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+
+                        return;
+                    }
+
+                    gepjarmu = meglevoGepjarmu;
+                }
+                else
+                {
+                    gepjarmu = new Gepjarmu();
+                    db.Gepjarmuvek.Add(gepjarmu);
+                }
+
+                gepjarmu.Rendszam = rendszam;
+                gepjarmu.Marka = marka;
+                gepjarmu.Modell = modell;
+                gepjarmu.Evjarat = evjarat;
+                gepjarmu.Alvazszam =
+                    string.IsNullOrWhiteSpace(alvazszam)
+                        ? null
+                        : alvazszam;
+                gepjarmu.Uzemanyag = uzemanyag;
+                gepjarmu.Kilometerora = kilometerora;
+                gepjarmu.MuszakiLejarat = dpMuszakiLejarat.SelectedDate;
+                gepjarmu.BiztositasLejarat = dpBiztositasLejarat.SelectedDate;
+                gepjarmu.Allapot = allapot;
 
                 await db.SaveChangesAsync();
 
                 MessageBox.Show(
-                    "A gépjármű sikeresen elmentve!",
+                    szerkesztettGepjarmuId.HasValue
+                        ? "A gépjármű adatai sikeresen módosítva!"
+                        : "A gépjármű sikeresen elmentve!",
                     "FleetManager – Sikeres mentés",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
                 DialogResult = true;
-                Close();
             }
             catch (DbUpdateException ex)
                 when (ex.InnerException is SqlException sqlEx &&
@@ -158,7 +228,6 @@ namespace FleetManager.Views
             RoutedEventArgs e)
         {
             DialogResult = false;
-            Close();
         }
     }
 }

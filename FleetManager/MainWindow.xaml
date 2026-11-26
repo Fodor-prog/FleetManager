@@ -147,7 +147,8 @@
                                        Foreground="#718096"
                                        FontSize="13"/>
 
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtOsszesGepjarmu"
+                                       Text="0"
                                        Style="{StaticResource StatNumberStyle}"/>
                         </StackPanel>
                     </Border>
@@ -158,7 +159,8 @@
                                        Foreground="#718096"
                                        FontSize="13"/>
 
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtAktivGepjarmu"
+                                       Text="0"
                                        Style="{StaticResource StatNumberStyle}"/>
                         </StackPanel>
                     </Border>
@@ -169,7 +171,8 @@
                                        Foreground="#718096"
                                        FontSize="13"/>
 
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtSzervizben"
+                                       Text="0"
                                        Style="{StaticResource StatNumberStyle}"/>
                         </StackPanel>
                     </Border>
@@ -180,7 +183,8 @@
                                        Foreground="#718096"
                                        FontSize="13"/>
 
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtLejaroMuszaki"
+                                       Text="0"
                                        Style="{StaticResource StatNumberStyle}"/>
                         </StackPanel>
                     </Border>
@@ -215,10 +219,26 @@
                                        Foreground="#15253B"
                                        VerticalAlignment="Center"/>
 
-                            <Button Grid.Column="1"
-                                    x:Name="btnUjGepjarmu"
-                                    Content="+ Új gépjármű"
-                                    Style="{StaticResource PrimaryButtonStyle}"/>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal">
+
+                                <Button x:Name="btnGepjarmuTorles"
+                                        Content="Törlés"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#DC2626"
+                                        Margin="0,0,10,0"/>
+
+                                <Button x:Name="btnGepjarmuSzerkesztes"
+                                        Content="Szerkesztés"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Background="#64748B"
+                                        Margin="0,0,10,0"/>
+
+                                <Button x:Name="btnUjGepjarmu"
+                                        Content="+ Új gépjármű"
+                                        Style="{StaticResource PrimaryButtonStyle}"/>
+
+                            </StackPanel>
 
                         </Grid>
 
@@ -227,6 +247,8 @@
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
                                   CanUserAddRows="False"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
                                   GridLinesVisibility="Horizontal"
                                   HeadersVisibility="Column"
                                   BorderThickness="0">
