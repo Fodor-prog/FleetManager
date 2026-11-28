@@ -3,6 +3,7 @@ using FleetManager.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,18 +12,24 @@ namespace FleetManager.Views
     public partial class GepjarmuForm : Window
     {
         private readonly int? szerkesztettGepjarmuId;
+        private readonly int? eredetiDolgozoId;
 
         public GepjarmuForm()
         {
             InitializeComponent();
 
+            Loaded += GepjarmuForm_Loaded;
+
             btnMentes.Click += BtnMentes_Click;
             btnMegse.Click += BtnMegse_Click;
+
+            btnMentes.IsEnabled = false;
         }
 
         public GepjarmuForm(Gepjarmu gepjarmu) : this()
         {
             szerkesztettGepjarmuId = gepjarmu.GepjarmuID;
+            eredetiDolgozoId = gepjarmu.DolgozoID;
 
             Title = "FleetManager - Gépjármű szerkesztése";
 
@@ -38,6 +45,62 @@ namespace FleetManager.Views
 
             ComboBoxErtekKivalasztasa(cmbUzemanyag, gepjarmu.Uzemanyag);
             ComboBoxErtekKivalasztasa(cmbAllapot, gepjarmu.Allapot);
+        }
+
+        private async void GepjarmuForm_Loaded(
+            object sender,
+            RoutedEventArgs e)
+        {
+            try
+            {
+                await using var db = new FleetManagerDbContext();
+
+                var munkavallalok = await db.Munkavallalok
+                    .AsNoTracking()
+                    .OrderBy(m => m.Nev)
+                    .ToListAsync();
+
+                munkavallalok.Insert(
+                    0,
+                    new Munkavallalo
+                    {
+                        DolgozoID = 0,
+                        Nev = "Nincs hozzárendelve"
+                    });
+
+                cmbMunkavallalo.ItemsSource = munkavallalok;
+
+                if (eredetiDolgozoId.HasValue)
+                {
+                    cmbMunkavallalo.SelectedValue =
+                        eredetiDolgozoId.Value;
+
+                    if (cmbMunkavallalo.SelectedItem == null)
+                    {
+                        MessageBox.Show(
+                            "A korábban hozzárendelt munkavállaló nem található.",
+                            "FleetManager – Figyelmeztetés",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+
+                        cmbMunkavallalo.SelectedValue = 0;
+                    }
+                }
+                else
+                {
+                    cmbMunkavallalo.SelectedValue = 0;
+                }
+
+                btnMentes.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Nem sikerült betölteni a munkavállalókat.\n\n{ex.Message}",
+                    "FleetManager – Adatbázishiba",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         private static void ComboBoxErtekKivalasztasa(
@@ -140,6 +203,22 @@ namespace FleetManager.Views
                 (cmbAllapot.SelectedItem as ComboBoxItem)?
                 .Content?.ToString() ?? "Aktív";
 
+            if (cmbMunkavallalo.SelectedItem is not Munkavallalo kivalasztott)
+            {
+                MessageBox.Show(
+                    "Válassz munkavállalót, vagy a Nincs hozzárendelve lehetőséget.",
+                    "Hiányzó adat",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            int? dolgozoId =
+                kivalasztott.DolgozoID == 0
+                    ? null
+                    : kivalasztott.DolgozoID;
+
             try
             {
                 btnMentes.IsEnabled = false;
@@ -177,15 +256,18 @@ namespace FleetManager.Views
                 gepjarmu.Marka = marka;
                 gepjarmu.Modell = modell;
                 gepjarmu.Evjarat = evjarat;
+
                 gepjarmu.Alvazszam =
                     string.IsNullOrWhiteSpace(alvazszam)
                         ? null
                         : alvazszam;
+
                 gepjarmu.Uzemanyag = uzemanyag;
                 gepjarmu.Kilometerora = kilometerora;
                 gepjarmu.MuszakiLejarat = dpMuszakiLejarat.SelectedDate;
                 gepjarmu.BiztositasLejarat = dpBiztositasLejarat.SelectedDate;
                 gepjarmu.Allapot = allapot;
+                gepjarmu.DolgozoID = dolgozoId;
 
                 await db.SaveChangesAsync();
 

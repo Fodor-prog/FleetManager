@@ -126,7 +126,8 @@
                         Content="Munkavállalók"
                         Style="{StaticResource MenuButtonStyle}"/>
 
-                <Button Content="Szervizelések"
+                <Button x:Name="btnSzervizelesekMenu"
+                        Content="Szervizelések"
                         Style="{StaticResource MenuButtonStyle}"/>
 
                 <Button Content="Kilométeróra-állások"
@@ -273,29 +274,34 @@
                                       SelectionUnit="FullRow"
                                       GridLinesVisibility="Horizontal"
                                       HeadersVisibility="Column"
-                                      BorderThickness="0">
+                                      BorderThickness="0"
+                                      HorizontalScrollBarVisibility="Auto">
 
                                 <DataGrid.Columns>
 
                                     <DataGridTextColumn Header="Rendszám"
                                                         Binding="{Binding Rendszam}"
-                                                        Width="*"/>
+                                                        Width="100"/>
 
                                     <DataGridTextColumn Header="Márka"
                                                         Binding="{Binding Marka}"
-                                                        Width="*"/>
+                                                        Width="110"/>
 
                                     <DataGridTextColumn Header="Modell"
                                                         Binding="{Binding Modell}"
-                                                        Width="*"/>
+                                                        Width="110"/>
 
                                     <DataGridTextColumn Header="Évjárat"
                                                         Binding="{Binding Evjarat}"
-                                                        Width="*"/>
+                                                        Width="80"/>
 
                                     <DataGridTextColumn Header="Állapot"
                                                         Binding="{Binding Allapot}"
-                                                        Width="*"/>
+                                                        Width="100"/>
+
+                                    <DataGridTextColumn Header="Hozzárendelt munkavállaló"
+                                                        Binding="{Binding Munkavallalo.Nev}"
+                                                        Width="200"/>
 
                                 </DataGrid.Columns>
 
@@ -308,6 +314,9 @@
                 </Grid>
 
                 <views:MunkavallalokView x:Name="munkavallalokView"
+                                         Visibility="Collapsed"/>
+
+                <views:SzervizelesekView x:Name="szervizelesekView"
                                          Visibility="Collapsed"/>
 
             </Grid>

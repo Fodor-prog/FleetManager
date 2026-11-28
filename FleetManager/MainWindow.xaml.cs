@@ -28,6 +28,7 @@ namespace FleetManager
             btnAttekintes.Click += BtnAttekintes_Click;
             btnGepjarmuvekMenu.Click += BtnGepjarmuvekMenu_Click;
             btnMunkavallalokMenu.Click += BtnMunkavallalokMenu_Click;
+            btnSzervizelesekMenu.Click += BtnSzervizelesekMenu_Click;
 
             txtGepjarmuKereses.TextChanged += TxtGepjarmuKereses_TextChanged;
         }
@@ -58,12 +59,23 @@ namespace FleetManager
             RoutedEventArgs e)
         {
             pnlAttekintes.Visibility = Visibility.Collapsed;
+            szervizelesekView.Visibility = Visibility.Collapsed;
             munkavallalokView.Visibility = Visibility.Visible;
+        }
+
+        private void BtnSzervizelesekMenu_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            pnlAttekintes.Visibility = Visibility.Collapsed;
+            munkavallalokView.Visibility = Visibility.Collapsed;
+            szervizelesekView.Visibility = Visibility.Visible;
         }
 
         private void GepjarmuvekNezetMegjelenitese()
         {
             munkavallalokView.Visibility = Visibility.Collapsed;
+            szervizelesekView.Visibility = Visibility.Collapsed;
             pnlAttekintes.Visibility = Visibility.Visible;
         }
 
@@ -74,6 +86,7 @@ namespace FleetManager
                 await using var db = new FleetManagerDbContext();
 
                 gepjarmuvek = await db.Gepjarmuvek
+                    .Include(g => g.Munkavallalo)
                     .AsNoTracking()
                     .OrderBy(g => g.Rendszam)
                     .ToListAsync();
@@ -124,7 +137,10 @@ namespace FleetManager
                         StringComparison.CurrentCultureIgnoreCase) ?? false) ||
                     g.Allapot.Contains(
                         kereses,
-                        StringComparison.CurrentCultureIgnoreCase))
+                        StringComparison.CurrentCultureIgnoreCase) ||
+                    (g.Munkavallalo?.Nev.Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase) ?? false))
                 .ToList();
 
             dgGepjarmuvek.ItemsSource = talalatok;
