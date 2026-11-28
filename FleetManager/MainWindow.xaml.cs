@@ -1,25 +1,35 @@
-﻿
-using FleetManager.Data;
+﻿using FleetManager.Data;
 using FleetManager.Models;
 using FleetManager.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace FleetManager
 {
     public partial class MainWindow : Window
     {
+        private List<Gepjarmu> gepjarmuvek = new();
+
         public MainWindow()
         {
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
+
             btnUjGepjarmu.Click += BtnUjGepjarmu_Click;
             btnGepjarmuSzerkesztes.Click += BtnGepjarmuSzerkesztes_Click;
             btnGepjarmuTorles.Click += BtnGepjarmuTorles_Click;
+
+            btnAttekintes.Click += BtnAttekintes_Click;
+            btnGepjarmuvekMenu.Click += BtnGepjarmuvekMenu_Click;
+            btnMunkavallalokMenu.Click += BtnMunkavallalokMenu_Click;
+
+            txtGepjarmuKereses.TextChanged += TxtGepjarmuKereses_TextChanged;
         }
 
         private async void MainWindow_Loaded(
@@ -29,35 +39,47 @@ namespace FleetManager
             await GepjarmuvekBetolteseAsync();
         }
 
+        private void BtnAttekintes_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            GepjarmuvekNezetMegjelenitese();
+        }
+
+        private void BtnGepjarmuvekMenu_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            GepjarmuvekNezetMegjelenitese();
+        }
+
+        private void BtnMunkavallalokMenu_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            pnlAttekintes.Visibility = Visibility.Collapsed;
+            munkavallalokView.Visibility = Visibility.Visible;
+        }
+
+        private void GepjarmuvekNezetMegjelenitese()
+        {
+            munkavallalokView.Visibility = Visibility.Collapsed;
+            pnlAttekintes.Visibility = Visibility.Visible;
+        }
+
         private async Task GepjarmuvekBetolteseAsync()
         {
             try
             {
                 await using var db = new FleetManagerDbContext();
 
-                var gepjarmuvek = await db.Gepjarmuvek
+                gepjarmuvek = await db.Gepjarmuvek
                     .AsNoTracking()
                     .OrderBy(g => g.Rendszam)
                     .ToListAsync();
 
-                dgGepjarmuvek.ItemsSource = gepjarmuvek;
-
-                txtOsszesGepjarmu.Text =
-                    gepjarmuvek.Count.ToString();
-
-                txtAktivGepjarmu.Text =
-                    gepjarmuvek.Count(g => g.Allapot == "Aktív").ToString();
-
-                txtSzervizben.Text =
-                    gepjarmuvek.Count(g => g.Allapot == "Szervizben").ToString();
-
-                DateTime harmincNapMulva = DateTime.Today.AddDays(30);
-
-                txtLejaroMuszaki.Text =
-                    gepjarmuvek.Count(g =>
-                        g.MuszakiLejarat.HasValue &&
-                        g.MuszakiLejarat.Value.Date <= harmincNapMulva
-                    ).ToString();
+                GepjarmuvekSzurese();
+                StatisztikakFrissitese();
             }
             catch (Exception ex)
             {
@@ -67,6 +89,65 @@ namespace FleetManager
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void TxtGepjarmuKereses_TextChanged(
+            object sender,
+            TextChangedEventArgs e)
+        {
+            GepjarmuvekSzurese();
+        }
+
+        private void GepjarmuvekSzurese()
+        {
+            string kereses = txtGepjarmuKereses.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(kereses))
+            {
+                dgGepjarmuvek.ItemsSource = gepjarmuvek;
+                return;
+            }
+
+            var talalatok = gepjarmuvek
+                .Where(g =>
+                    g.Rendszam.Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase) ||
+                    g.Marka.Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase) ||
+                    g.Modell.Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase) ||
+                    (g.Evjarat?.ToString().Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase) ?? false) ||
+                    g.Allapot.Contains(
+                        kereses,
+                        StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+
+            dgGepjarmuvek.ItemsSource = talalatok;
+        }
+
+        private void StatisztikakFrissitese()
+        {
+            txtOsszesGepjarmu.Text =
+                gepjarmuvek.Count.ToString();
+
+            txtAktivGepjarmu.Text =
+                gepjarmuvek.Count(g => g.Allapot == "Aktív").ToString();
+
+            txtSzervizben.Text =
+                gepjarmuvek.Count(g => g.Allapot == "Szervizben").ToString();
+
+            DateTime harmincNapMulva = DateTime.Today.AddDays(30);
+
+            txtLejaroMuszaki.Text =
+                gepjarmuvek.Count(g =>
+                    g.MuszakiLejarat.HasValue &&
+                    g.MuszakiLejarat.Value.Date <= harmincNapMulva
+                ).ToString();
         }
 
         private async void BtnUjGepjarmu_Click(
